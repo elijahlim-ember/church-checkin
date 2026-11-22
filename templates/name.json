@@ -1,0 +1,21 @@
+{
+  "name": "Name label (one per person)",
+  "media": "62",
+  "length_mm": 75,
+  "rotate": 90,
+  "elements": [
+    {"type": "text", "value": "{name}", "unless": ["last_name", "code", "class", "alert"], "x": 3, "y": 4, "width": 63, "height": 40, "size": 20, "bold": true, "align": "center", "max_lines": 3, "min_scale": 0.33},
+    {"type": "text", "value": "{name}", "if": "last_name", "unless": "code", "x": 3, "y": 3, "width": 63, "height": 22, "size": 17, "bold": true, "max_lines": 2},
+    {"type": "text", "value": "{name}", "unless": ["last_name", "code"], "if": "class", "x": 3, "y": 3, "width": 63, "height": 28, "size": 18, "bold": true, "max_lines": 2},
+    {"type": "text", "value": "{name}", "unless": ["last_name", "code", "class"], "if": "alert", "x": 3, "y": 3, "width": 63, "height": 36, "size": 19, "bold": true, "max_lines": 2},
+    {"type": "text", "value": "{name}", "if": "code", "x": 3, "y": 3, "width": 44, "height": 22, "size": 17, "bold": true, "max_lines": 2},
+    {"type": "text", "value": "{code}", "if": "code", "x": 49, "y": 4, "width": 17, "height": 11, "size": 7, "bold": true, "align": "center", "invert": true},
+    {"type": "text", "value": "{last_name}", "if": "last_name", "x": 3, "y": 25, "width": 63, "height": 9, "size": 7},
+    {"type": "text", "value": "{class}", "if": "class", "x": 3, "y": 35, "width": 46, "height": 7, "size": 5, "bold": true},
+    {"type": "text", "value": "{room}", "if": "room", "x": 50, "y": 35, "width": 16, "height": 7, "size": 4, "align": "right"},
+    {"type": "text", "value": "! {alert}  {alert_note}", "if": "alert", "x": 3, "y": 43, "width": 63, "height": 7, "size": 4.2, "bold": true, "invert": true},
+    {"type": "line", "x1": 3, "y1": 51.5, "x2": 66, "y2": 51.5, "thickness": 0.3},
+    {"type": "text", "value": "{church}  ·  {date_short}", "x": 3, "y": 52.5, "width": 46, "height": 5.5, "size": 3.4},
+    {"type": "text", "value": "VISITOR", "if": "visitor", "x": 50, "y": 52.6, "width": 16, "height": 5.2, "size": 3.2, "bold": true, "align": "center", "invert": true}
+  ]
+}

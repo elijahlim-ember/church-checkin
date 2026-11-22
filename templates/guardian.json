@@ -1,0 +1,15 @@
+{
+  "name": "Parent pickup tag",
+  "media": "62",
+  "length_mm": 70,
+  "rotate": 90,
+  "elements": [
+    {"type": "text", "value": "PICKUP TAG", "x": 3, "y": 1.5, "width": 40, "height": 6, "size": 4.5, "bold": true},
+    {"type": "text", "value": "{time}", "x": 44, "y": 1.5, "width": 17, "height": 6, "size": 3.6, "align": "right"},
+    {"type": "text", "value": "{code}", "x": 3, "y": 8.5, "width": 58, "height": 20, "size": 15, "bold": true, "align": "center", "invert": true},
+    {"type": "text", "value": "{children}", "x": 3, "y": 30, "width": 58, "height": 13, "size": 5.5, "bold": true, "max_lines": 2},
+    {"type": "text", "value": "{pickup_note}", "if": "pickup_note", "x": 3, "y": 43.5, "width": 58, "height": 5, "size": 3.4},
+    {"type": "text", "value": "{date}  ·  {service}", "x": 3, "y": 49.5, "width": 58, "height": 4.5, "size": 3.2},
+    {"type": "text", "value": "Show this tag to collect your child", "x": 3, "y": 54, "width": 58, "height": 4.2, "size": 3.0}
+  ]
+}

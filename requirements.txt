@@ -1,0 +1,8 @@
+pillow>=10.1
+cryptography>=41
+openpyxl>=3.1
+# Direct USB printing via libusb. On Windows the printer's interface 0 uses the WinUSB driver (Zadig) and
+# libusb-package supplies the libusb DLL; on macOS/Linux install libusb itself (brew install libusb).
+pyusb>=1.2
+libusb-package>=1.0.26; sys_platform == "win32"
+tzdata==2026.5

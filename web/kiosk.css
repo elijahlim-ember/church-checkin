@@ -1,0 +1,496 @@
+/* The kiosk's look: cool Apple greys around the brand navy and orange, surfaces lifted by soft shadows rather than
+   borders, frosted bars that content slides under, large tight headings, and keys that press fast and spring back.
+   Kept here, not in style.css, so kiosk-specific layout stays separate. */
+:root {
+  --bg: #f5f5f7;
+  --line: #e5e5ea;
+  --line-strong: #d1d1d6;
+  --soft: #ececf0;
+  --muted: #5d6472;
+  --bar-h: 64px;
+  --bar-full: calc(var(--bar-h) + env(safe-area-inset-top, 0px));
+  --raise: 0 1px 2px rgba(0, 21, 61, .05), 0 8px 24px rgba(0, 21, 61, .06);
+  --float: 0 18px 50px rgba(0, 21, 61, .18);
+  --tone: rgba(0, 21, 61, .06);
+  --glass: rgba(255, 255, 255, .72);
+  --frost: blur(12px);
+  --spring: cubic-bezier(.3, 1.4, .5, 1);
+}
+h1, h2, h3 { letter-spacing: -.022em; }
+::selection { background: var(--orange-soft); color: var(--brand-navy); }
+input, textarea { caret-color: var(--brand-blue); }
+input, select, textarea { border-radius: 14px; }
+
+html, body { overflow: hidden; overscroll-behavior: none; }
+/* A shared kiosk: no text selection or long-press callouts, except in the boxes people type in. */
+body { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+input, textarea { user-select: text; -webkit-user-select: text; }
+
+#app { position: relative; height: 100vh; height: 100dvh; }
+
+/* Buttons: raised, no outline. Instant on the way down, a small spring on the way back. */
+.btn { border-color: transparent; box-shadow: var(--raise); transition: background-color .15s ease, color .15s ease, transform .32s var(--spring); }
+.btn:active:not([disabled]) { transform: scale(.96); transition-duration: .15s, .15s, .06s; }
+.btn.ghost { box-shadow: none; }
+.btn.big { border-radius: 20px; }
+.btn.huge { border-radius: 22px; }
+@media (hover: hover) and (pointer: fine) { .btn:not([class*="outline-"]):hover { border-color: transparent; } }
+
+/* Status bar: always visible */
+.bar {
+  position: absolute; inset: 0 0 auto 0; z-index: 20; height: var(--bar-full);
+  display: flex; align-items: center; gap: 10px; color: var(--text);
+  background: var(--glass); -webkit-backdrop-filter: var(--frost); backdrop-filter: var(--frost); box-shadow: 0 1px 0 rgba(0, 21, 61, .07);
+  /* Clear of the iPad's status bar and rounded corners when it runs full screen from the home screen */
+  padding: env(safe-area-inset-top, 0px) max(16px, env(safe-area-inset-right)) 0 max(16px, env(safe-area-inset-left));
+  font-size: 16px; flex-wrap: nowrap; overflow: hidden;
+}
+.bar .brand { font-weight: 650; font-size: 18px; letter-spacing: -.012em; color: var(--brand-navy); white-space: nowrap; display: inline-flex; align-items: center; gap: 10px; }
+.brand-mark { height: 38px; width: auto; display: block; }
+.bar .chip {
+  display: inline-flex; align-items: center; gap: 7px; padding: 6px 14px; border-radius: 999px;
+  background: var(--tone); white-space: nowrap; border: 1.5px solid transparent; color: var(--text); min-height: 44px; font-weight: 550;
+}
+.chip, .card.tap, .row, input, select, textarea { touch-action: manipulation; }
+.bar button.chip { font-weight: 650; background: var(--tone); color: var(--ink); }
+.bar .chip svg.icon { color: var(--muted); }
+.bar .grow { flex: 1; }
+.bar > * { flex: none; }
+/* Chips that don't fit wrap onto a hidden second row, so none is ever cut in half. */
+.bar .bar-status { flex: 1 1 auto; min-width: 0; display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; height: 44px; overflow: hidden; }
+.bar .clock { font-variant-numeric: tabular-nums; font-weight: 650; color: var(--ink); background: transparent; padding-right: 2px; }
+.bar .chip.bad, .bar button.chip.bad { background: var(--red); border-color: var(--red); color: #fff; }
+.bar .chip.bad .dot { background: #fff; }
+.bar .chip.warn, .bar button.chip.warn { background: var(--amber-soft); border-color: var(--brand-orange); color: var(--amber); }
+.bar .chip.warn svg.icon { color: var(--amber); }
+@media (max-width: 1100px) { .bar .hide-narrow { display: none; } }
+@media (max-width: 860px) {
+  .bar { gap: 6px; padding-left: max(12px, env(safe-area-inset-left)); padding-right: max(12px, env(safe-area-inset-right)); }
+  .bar .bar-status { gap: 6px; }
+  .bar .chip { padding: 6px 9px; }
+  .bar .brand { font-size: 16px; }
+}
+
+/* Content runs under the frosted bar as it scrolls */
+main { height: 100%; overflow: auto; position: relative; padding-top: var(--bar-full); scroll-padding-top: var(--bar-full); }
+.screen { min-height: 100%; padding: 24px 28px 28px; }
+
+/* Search screen (check-out uses the same two columns) */
+.search-grid { display: grid; grid-template-columns: minmax(330px, 430px) 1fr; gap: 24px; align-items: start; }
+/* Check-in: two equal halves that fill the screen. Members key in on the left; the right half welcomes people, shows
+   matches, and keeps the newcomer button at its foot. The keypad grows and shrinks with the screen height, so on a
+   short laptop screen nothing is pushed below the fold. */
+.screen-search { height: 100%; padding-bottom: max(20px, env(safe-area-inset-bottom)); }
+.screen-search .search-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; align-items: stretch;
+  height: 100%; min-height: 520px; max-width: 1400px; margin: 0 auto;
+}
+.pad { display: flex; flex-direction: column; min-height: 0; }
+.pad-title { margin: 0; font-size: 36px; font-weight: 700; color: var(--brand-navy); line-height: 1.12; text-wrap: balance; }
+.pad .prompt { font-size: 21px; font-weight: 500; color: var(--muted); margin: 4px 0 16px; }
+.screen-search .pad .keypad { flex: 1 1 auto; min-height: 0; max-height: 440px; grid-template-rows: repeat(4, minmax(54px, 1fr)); }
+.screen-search .pad .keypad button { height: auto; }
+.screen-search .side-actions { margin-top: 14px; }
+.screen-search .side-actions .btn.big { min-height: 64px; font-size: 20px; padding: 10px 12px; }
+.welcome {
+  display: flex; flex-direction: column; gap: 18px; min-height: 0;
+  background: var(--panel); border-radius: 28px; padding: 32px 28px 28px; box-shadow: var(--raise);
+}
+.welcome-mark { display: block; height: 84px; width: auto; margin: 0 0 18px; }
+.welcome > .results { flex: 1 1 auto; min-height: 0; overflow: auto; overscroll-behavior: contain; }
+.welcome-title { margin: 0 0 10px; font-size: 36px; font-weight: 700; line-height: 1.12; color: var(--brand-navy); text-wrap: balance; }
+.steps { list-style: none; counter-reset: step; margin: 0; padding: 0; display: grid; gap: 14px; }
+.steps li {
+  counter-increment: step; display: grid; grid-template-columns: 40px 1fr; gap: 14px; align-items: center;
+  font-size: 20px; font-weight: 500; color: var(--ink); line-height: 1.3;
+}
+.steps li::before {
+  content: counter(step); width: 40px; height: 40px; border-radius: 50%; background: var(--bg); color: var(--brand-navy);
+  display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 650;
+}
+.newcomer-hint { display: block; margin-top: 8px; color: var(--ink); font-weight: 650; }
+/* The one orange thing on the screen: the way in for someone who has never been here. */
+.newcomer {
+  flex: none; display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 20px; width: 100%; text-align: left;
+  min-height: 124px; padding: 20px 26px; border-radius: 24px; border: 0; background: var(--brand-orange); color: var(--brand-navy);
+  box-shadow: 0 10px 28px rgba(0, 21, 61, .14);
+  transition: background-color .12s ease, transform .32s var(--spring);
+}
+.newcomer:active { background: var(--brand-orange-deep); transform: scale(.975); transition-duration: .12s, .06s; }
+@media (hover: hover) and (pointer: fine) { .newcomer:hover { background: var(--brand-orange-deep); } }
+.newcomer-icon { width: 68px; height: 68px; border-radius: 50%; background: var(--brand-navy); color: #fff; display: flex; align-items: center; justify-content: center; }
+.newcomer-icon svg.icon { width: 36px; height: 36px; stroke-width: 2.6; }
+.newcomer-title { display: block; font-size: 32px; font-weight: 700; letter-spacing: -.022em; line-height: 1.1; }
+.newcomer-sub { display: block; font-size: 19px; font-weight: 550; margin-top: 6px; }
+/* Short screens (the laptop desk): a smaller number box and newcomer button make room for the keypad */
+@media (max-height: 720px) {
+  .screen-search { padding-top: 14px; }
+  .screen-search .search-grid { min-height: 0; }
+  .screen-search .digits { height: 72px; font-size: 44px; margin-bottom: 10px; }
+  .pad-title, .welcome-title { font-size: 28px; }
+  .pad .prompt { margin-bottom: 10px; }
+  .welcome { padding: 20px 22px 18px; gap: 14px; border-radius: 24px; }
+  .welcome-mark { height: 52px; margin-bottom: 10px; }
+  .newcomer { min-height: 104px; padding: 16px 22px; }
+  .newcomer-icon { width: 58px; height: 58px; }
+  .newcomer-title { font-size: 28px; }
+}
+/* iPad upright: still side by side, so matches and the newcomer button are on screen without scrolling. */
+@media (orientation: portrait) {
+  .search-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; }
+  .screen-search .pad .keypad { grid-template-rows: repeat(4, minmax(84px, 1fr)); max-height: none; }
+  .screen-search .side-actions { margin-top: auto; padding-top: 14px; }
+  .digits { font-size: 46px; }
+  .welcome { padding: 24px 20px 20px; }
+  .welcome-title { font-size: 30px; }
+  .welcome-mark { height: 72px; }
+  .steps li { font-size: 19px; grid-template-columns: 36px 1fr; gap: 12px; }
+  .steps li::before { width: 36px; height: 36px; font-size: 17px; }
+  .newcomer { grid-template-columns: 1fr; gap: 12px; padding: 18px 20px; }
+  .newcomer-title { font-size: 28px; }
+  .search-grid .result { grid-template-columns: 1fr; gap: 4px; padding: 14px 16px; }
+  .search-grid .result .phone { font-size: 19px; }
+}
+/* Phones: one column, the page scrolls */
+@media (max-width: 700px) {
+  .search-grid, .screen-search .search-grid { grid-template-columns: 1fr; height: auto; min-height: 0; }
+  .screen-search { height: auto; }
+  .welcome > .results { overflow: visible; }
+}
+.prompt { font-size: 24px; font-weight: 650; color: var(--ink); margin: 2px 0 12px; text-wrap: balance; }
+.digits {
+  height: 96px; border-radius: 22px; background: #fff; box-shadow: var(--raise); display: flex;
+  align-items: center; justify-content: center; font-size: 54px; font-weight: 600; letter-spacing: 10px;
+  font-variant-numeric: tabular-nums; margin-bottom: 14px; color: var(--brand-navy);
+}
+.digits.placeholder { color: #a3a3ab; letter-spacing: 6px; }
+.digits.long { font-size: 34px; letter-spacing: 4px; }
+.keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.keypad button {
+  height: 84px; border-radius: 22px; border: 0; background: #fff; font-size: 38px; font-weight: 500; box-shadow: var(--raise);
+  color: var(--ink); display: flex; align-items: center; justify-content: center; font-variant-numeric: tabular-nums;
+  transition: background-color .18s ease, transform .32s var(--spring);
+}
+.keypad button:active { background: var(--soft); transform: scale(.94); transition-duration: .05s, .06s; }
+.keypad button.fn { font-size: 21px; font-weight: 600; color: var(--ink); background: var(--tone); box-shadow: none; }
+.keypad button.fn:active { background: rgba(0, 21, 61, .13); }
+.keypad button.go { background: var(--brand-orange); color: var(--brand-navy); }
+.keypad button.go:active { background: var(--brand-orange-deep); }
+.keypad button svg.icon { width: 34px; height: 34px; stroke-width: 2.2; }
+.keypad.letters { grid-template-columns: repeat(6, 1fr); }
+.keypad.letters button { height: 70px; font-size: 30px; }
+.side-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
+.side-actions .wide { grid-column: 1 / -1; }
+.results { display: grid; gap: 12px; align-content: start; }
+.result {
+  display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px; text-align: left;
+  background: #fff; border: 0; border-radius: 20px; padding: 18px 22px; width: 100%; box-shadow: var(--raise);
+  transition: background-color .15s ease, transform .32s var(--spring);
+}
+/* On the white welcome card, a step of grey does the lifting */
+.welcome .result { background: var(--bg); box-shadow: none; }
+.result:active, .welcome .result:active { background: var(--blue-soft); transform: scale(.98); transition-duration: .1s, .06s; }
+.result .fam { font-size: 26px; font-weight: 700; letter-spacing: -.018em; color: var(--brand-navy); }
+.result .who { color: var(--muted); font-size: 18px; }
+.result .kids { font-size: 18px; margin-top: 4px; }
+.result .phone { font-size: 22px; font-weight: 650; font-variant-numeric: tabular-nums; color: var(--muted); }
+.empty-state { text-align: center; color: var(--muted); padding: 40px 10px; font-size: 20px; }
+.empty-state strong { color: var(--ink); display: block; font-size: 26px; font-weight: 700; margin-bottom: 6px; }
+.namebox { display: flex; gap: 10px; margin-bottom: 14px; }
+.namebox input { font-size: 26px; padding: 14px 16px; border-radius: 14px; }
+
+/* Household screen */
+.hh-head { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; flex-wrap: wrap; }
+.hh-head h1 { margin: 0; font-size: 38px; font-weight: 700; line-height: 1.12; color: var(--brand-navy); }
+.hh-head .who { color: var(--muted); font-size: 19px; }
+.kids-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 16px; padding-bottom: 130px; }
+.kid {
+  position: relative; text-align: left; background: #fff; border: 0; border-radius: 24px; box-shadow: var(--raise);
+  padding: 20px 20px 18px 76px; min-height: 118px; width: 100%; color: var(--text);
+  display: flex; flex-direction: column; justify-content: flex-start; align-items: stretch;
+  transition: background-color .15s ease, box-shadow .15s ease, transform .32s var(--spring);
+}
+.kid:not(.done):active { transform: scale(.98); transition-duration: .15s, .15s, .06s; }
+.kid .tick {
+  position: absolute; left: 20px; top: 20px; width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--line-strong);
+  display: flex; align-items: center; justify-content: center; color: transparent; background: #fff;
+  transition: background-color .15s ease, border-color .15s ease;
+}
+.kid .tick svg.icon { width: 26px; height: 26px; stroke-width: 3; }
+.kid.selected { background: var(--blue-soft); box-shadow: 0 0 0 2.5px var(--brand-blue), var(--raise); }
+.kid.selected .tick { background: var(--brand-blue); border-color: var(--brand-blue); color: #fff; }
+.kid .nm { font-size: 30px; font-weight: 700; letter-spacing: -.02em; line-height: 1.1; color: var(--ink); }
+.kid .ln { font-size: 19px; color: var(--muted); margin-bottom: 8px; }
+.kid .meta { display: flex; gap: 6px; flex-wrap: wrap; }
+/* Class and age, big and solid enough for older volunteers to read at arm's length */
+.kid .meta .pill { font-size: 18px; padding: 4px 12px; }
+.kid .meta .pill:not(.green):not(.amber):not(.blue) { color: var(--ink); background: var(--tone); }
+.kid .alert { margin-top: 8px; color: var(--red); font-weight: 650; font-size: 17px; display: flex; gap: 6px; align-items: flex-start; }
+.kid .alert .ico { background: var(--red); color: #fff; border-radius: 6px; padding: 0 7px; font-weight: 800; flex: none; }
+.kid.done { background: var(--soft); box-shadow: none; cursor: default; padding-left: 20px; }
+.kid.done .tick { display: none; }
+.kid .state { margin-top: 10px; font-weight: 650; font-size: 18px; display: flex; align-items: center; gap: 6px; }
+.kid .state.in { color: var(--green); }
+.kid .state.out { color: var(--purple); }
+.kid .kid-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.action-bar {
+  position: fixed; left: 0; right: 0; bottom: 0; padding: 14px 28px 18px;
+  background: var(--glass); -webkit-backdrop-filter: var(--frost); backdrop-filter: var(--frost); box-shadow: 0 -1px 0 rgba(0, 21, 61, .07);
+  padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  display: flex; gap: 14px; align-items: stretch;
+}
+.action-bar .btn.huge { flex: 1; }
+.txns { margin: 0 0 16px; display: grid; gap: 10px; }
+.txn { display: flex; align-items: center; gap: 12px; background: #fff; border-radius: 18px; padding: 12px 16px; box-shadow: var(--raise); flex-wrap: wrap; }
+.txn .code { font-size: 24px; font-weight: 700; letter-spacing: 2px; background: var(--brand-navy); color: #fff; padding: 2px 12px; border-radius: 8px; }
+.txn .grow { flex: 1; min-width: 160px; }
+
+/* Success / print status */
+.center-col { max-width: 860px; margin: 0 auto; text-align: center; padding-top: 14px; }
+.big-tick {
+  width: 110px; height: 110px; border-radius: 50%; background: var(--green); color: #fff;
+  display: flex; align-items: center; justify-content: center; margin: 6px auto 12px;
+}
+.big-tick svg.icon { width: 64px; height: 64px; stroke-width: 2.6; }
+/* The tick lands with a small spring; matches rise into place. Both off for people who turn motion down. */
+@keyframes tick-in { from { transform: scale(.5); opacity: 0; } }
+@keyframes rise-in { from { transform: translateY(10px); opacity: 0; } }
+.big-tick { animation: tick-in .45s var(--spring) both; }
+.results > .result { animation: rise-in .28s cubic-bezier(.2, .8, .2, 1) both; }
+@media (prefers-reduced-motion: reduce) { .big-tick, .results > .result { animation: none; } }
+.big-tick.out { background: var(--purple); }
+.success-title { font-size: 44px; font-weight: 700; line-height: 1.1; margin: 0; }
+.success-names { font-size: 24px; margin: 8px 0 16px; }
+.code-show { display: inline-block; font-size: 64px; font-weight: 750; letter-spacing: 10px; background: var(--brand-navy); color: #fff; border-radius: 16px; padding: 6px 26px; margin-bottom: 18px; }
+.print-box { border-radius: 22px; padding: 20px 24px; margin: 0 auto 18px; font-size: 24px; font-weight: 650; max-width: 760px; }
+.print-box svg.icon { vertical-align: -.15em; }
+.print-box.wait { background: var(--blue-soft); color: var(--blue); }
+.print-box.ok { background: var(--green-soft); color: var(--green); }
+.print-box.bad { background: var(--red-soft); color: var(--red); }
+.print-box.warn { background: var(--amber-soft); color: var(--amber); }
+.print-box .sub { font-size: 18px; font-weight: 550; margin-top: 6px; }
+.btn-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 14px; }
+
+/* Overlays */
+.overlay {
+  position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center;
+  background: rgba(0, 13, 38, .55); padding: 20px;
+}
+.dialog { background: #fff; border-radius: 28px; padding: 28px; width: min(640px, 100%); max-height: 90vh; max-height: 90dvh; overflow: auto; overscroll-behavior: contain; box-shadow: var(--float); }
+.dialog h2 { margin: 0 0 12px; font-size: 28px; font-weight: 700; }
+.dialog .btn-row { justify-content: flex-end; }
+.offline {
+  position: fixed; inset: var(--bar-full) 0 0 0; z-index: 80; background: rgba(184, 35, 43, .96); color: #fff;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 30px;
+}
+.offline h1 { font-size: 52px; font-weight: 750; margin: 0 0 14px; color: #fff; }
+.offline p { font-size: 24px; max-width: 760px; margin: 6px 0; }
+
+/* Lock / setup */
+.lock { max-width: 460px; margin: 0 auto; text-align: center; padding-top: 14px; }
+.lock h1 { font-size: 30px; font-weight: 700; margin: 6px 0 2px; color: var(--brand-navy); }
+.pin-dots { display: flex; justify-content: center; gap: 14px; margin: 18px 0; height: 30px; }
+.pin-dots span { width: 22px; height: 22px; border-radius: 50%; border: 2.5px solid var(--brand-navy); }
+.pin-dots span.on { background: var(--brand-orange); border-color: var(--brand-orange); }
+.form { max-width: 760px; margin: 0 auto; }
+.form h1 { font-size: 32px; font-weight: 700; margin: 0 0 6px; color: var(--brand-navy); }
+.form input:not([type=checkbox]), .form select { min-height: 56px; }
+.form .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 700px) { .form .row { grid-template-columns: 1fr; } }
+/* Locked, and setting up a station: the supplied lock wallpaper with
+   the card as dark glass in the lower third, so the logo shows above it. */
+.screen-lock, .screen-register {
+  /* The wallpaper runs up behind the bar */
+  margin-top: calc(-1 * var(--bar-full)); padding-top: calc(var(--bar-full) + 24px); min-height: calc(100% + var(--bar-full));
+  display: flex; flex-direction: column; justify-content: flex-end; padding-bottom: max(24px, 6vh);
+  background: #03030c url(lock-bg.jpg) center / cover no-repeat;
+  background-image: image-set(url(lock-bg.webp) type("image/webp"), url(lock-bg.jpg) type("image/jpeg"));
+}
+.screen-lock .lock, .screen-register .form {
+  width: 100%; margin: 0 auto; padding: 24px 26px 26px; border-radius: 30px; color: rgba(255, 255, 255, .8);
+  background: rgba(0, 21, 61, .62); -webkit-backdrop-filter: saturate(170%) blur(28px); backdrop-filter: saturate(170%) blur(28px);
+  border: 1px solid rgba(255, 255, 255, .16); box-shadow: 0 24px 60px rgba(0, 0, 0, .4);
+}
+/* The bar turns to dark glass over the wallpaper, which already carries the logo */
+body:has(.screen-lock, .screen-register) .bar { background: rgba(0, 13, 38, .42); box-shadow: none; color: #fff; }
+body:has(.screen-lock, .screen-register) .bar .brand { color: #fff; }
+body:has(.screen-lock, .screen-register) .bar .brand-mark { display: none; }
+body:has(.screen-lock, .screen-register) .bar .chip { background: rgba(255, 255, 255, .14); color: #fff; }
+body:has(.screen-lock, .screen-register) .bar .chip svg.icon { color: rgba(255, 255, 255, .8); }
+body:has(.screen-lock, .screen-register) .bar .clock { background: transparent; color: #fff; }
+/* Passcode keys: lit glass, like a phone's lock screen */
+.screen-lock .keypad button { background: rgba(255, 255, 255, .15); color: #fff; box-shadow: none; }
+.screen-lock .keypad button:active { background: rgba(255, 255, 255, .32); }
+.screen-lock .keypad button.fn { color: #fff; background: rgba(255, 255, 255, .08); }
+.screen-lock .keypad button.go { background: var(--brand-orange); color: var(--brand-navy); }
+.screen-register .form { max-width: 640px; }
+.screen-lock .lock h1, .screen-lock .lock p, .screen-register .form :is(h1, h2), .screen-register label { color: #fff; }
+.screen-register .form h2 { font-size: 22px; font-weight: 700; margin: 18px 0 4px; }
+.screen-lock .hint, .screen-register .hint { color: rgba(255, 255, 255, .78); }
+.screen-lock .pin-dots span { border-color: #fff; }
+.screen-lock .pin-dots span.on { border-color: var(--brand-orange); }
+.screen-register .btn.blue { background: var(--brand-orange); border-color: var(--brand-orange); color: var(--brand-navy); }
+.screen-register .btn.ghost { color: #fff; border-color: rgba(255, 255, 255, .4); }
+.screen-register .btn.ghost:active { background: rgba(255, 255, 255, .16); }
+@media (hover: hover) and (pointer: fine) { .screen-register .btn.ghost:hover { background: rgba(255, 255, 255, .12); } }
+.screen-lock :focus-visible, .screen-register :focus-visible { outline-color: #fff; }
+.screen-register :is(input, select) { color: var(--ink); }
+/* The PIN pad is too tall for the lower third, so where there's room it sits beside the PIN, keeping the card low */
+@media (min-width: 700px) {
+  .screen-lock .lock { max-width: 760px; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr repeat(4, auto) 1fr; column-gap: 28px; }
+  .screen-lock .lock > .keypad { grid-column: 2; grid-row: 1 / -1; }
+  .screen-lock .lock > :nth-child(1) { grid-row: 2; }
+  .screen-lock .lock > :nth-child(2) { grid-row: 3; }
+  .screen-lock .lock > :nth-child(3) { grid-row: 4; }
+  .screen-lock .lock > :nth-child(4) { grid-row: 5; margin-bottom: 0; }
+  .screen-lock .keypad button { height: 72px; }
+}
+@media (min-width: 700px) and (max-height: 820px) {
+  .screen-lock { padding-bottom: 16px; }
+  .screen-lock .keypad button { height: 64px; }
+}
+/* Landscape, the logo sits where the card is, so the picture is drawn a little larger from the bottom up, which
+   lifts the logo above the card and crops only empty sky */
+@media (min-width: 700px) and (orientation: landscape) {
+  .screen-lock, .screen-register { background-size: auto 130%; background-position: center bottom; }
+}
+/* Wide enough for the boxes side by side, which keeps the card low too */
+@media (min-width: 760px) {
+  .screen-register .form { display: grid; grid-template-columns: 1fr 1fr; column-gap: 14px; }
+  .screen-register .form > :is(h1, h2, p, .row, .btn-row, .wide, .admin-panel, .code-panel, .code-toggle) { grid-column: 1 / -1; }
+}
+.child-block { border-radius: 22px; padding: 4px 18px 18px; margin: 14px 0; background: #fff; box-shadow: var(--raise); }
+.toggle { display: flex; align-items: center; gap: 10px; font-weight: 600; margin: 12px 0; }
+.toggle input { width: 30px; height: 30px; }
+/* The visitor form's optional taps: one row each, the label beside its choices where there's room */
+.about { border-radius: 22px; padding: 0 18px; margin: 16px 0 4px; background: #fff; box-shadow: var(--raise); }
+.about[open] { padding-bottom: 14px; }
+.about summary::-webkit-details-marker { display: none; }
+.about summary { list-style: none; min-height: 60px; display: flex; align-items: center; gap: 6px; font-weight: 650; font-size: 20px; color: var(--ink); cursor: pointer; }
+.about summary::after { content: "+"; margin-left: auto; font-size: 28px; font-weight: 400; color: var(--muted); }
+.about[open] summary::after { content: "−"; }
+.choice-row { display: grid; grid-template-columns: 190px 1fr; gap: 6px 14px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
+.choice-label { font-weight: 600; color: var(--ink); }
+.choices { display: flex; flex-wrap: wrap; gap: 8px; }
+.choice {
+  min-height: 48px; padding: 8px 18px; border-radius: 999px; border: 1.5px solid var(--line-strong);
+  background: #fff; color: var(--ink); font: inherit; font-size: 18px; font-weight: 600;
+  transition: background-color .15s ease, border-color .15s ease, color .15s ease, transform .32s var(--spring);
+}
+.choice[aria-pressed="true"] { background: var(--brand-navy); border-color: var(--brand-navy); color: #fff; }
+.choice:active { transform: scale(.96); transition-duration: .15s, .15s, .15s, .06s; }
+.contact-how .choice-row { border-top: 0; padding-top: 0; }
+.consent { margin: 4px 0 0; font-size: 16px; }
+@media (max-width: 700px) { .choice-row { grid-template-columns: 1fr; } }
+/* A required field left empty on save */
+input.invalid, select.invalid { border-color: var(--red); box-shadow: 0 0 0 3px var(--red-soft); }
+.field-error { color: var(--red); font-weight: 650; font-size: 17px; margin-top: 6px; }
+
+/* Menu drawer */
+.drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(560px, 100%); background: var(--bg); z-index: 60; overflow: auto; padding: 18px;
+  padding-top: max(18px, env(safe-area-inset-top)); padding-bottom: max(18px, env(safe-area-inset-bottom)); overscroll-behavior: contain; box-shadow: var(--float); }
+.drawer h2 { margin: 18px 0 10px; font-size: 22px; font-weight: 700; }
+.drawer .item { display: flex; align-items: center; gap: 10px; padding: 14px 16px; background: #fff; border-radius: 18px; box-shadow: var(--raise); margin-bottom: 10px; flex-wrap: wrap; }
+.drawer .item .grow { flex: 1; min-width: 150px; }
+.prompt.other-days { font-size: 18px; color: var(--muted); margin: 18px 0 0; text-align: left; }
+.results .btn .hint { margin-left: 6px; }
+
+/* iPhone upright (and any phone): one column that reads top to bottom. The keypad and both search buttons fit the
+   first screen, the orange newcomer button sits right under them, and matches scroll into view when they arrive.
+   Last in the file so it wins over the iPad portrait rules above. */
+@media (max-width: 560px) {
+  :root { --bar-h: 56px; }
+  .bar { gap: 6px; }
+  .bar .brand { font-size: 0; gap: 0; }
+  .brand-mark { height: 32px; }
+  .bar .clock { display: none; }
+  .bar .chip { min-height: 44px; padding: 5px 9px; font-size: 15px; }
+  .bar > button.chip:not(:last-child) { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; display: block; line-height: 28px; }
+  .bar > button.chip.lang { flex: none; overflow: visible; }  /* the language button always shows in full */
+  .bar .bar-status { height: 44px; gap: 6px; }
+
+  .screen { padding: 14px 16px 20px; padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
+  .screen-search .search-grid { gap: 14px; }
+  .pad-title { font-size: 24px; }
+  .pad .prompt { font-size: 17px; margin: 2px 0 10px; }
+  .screen-search .digits, .digits { height: 60px; font-size: 36px; letter-spacing: 6px; margin-bottom: 10px; border-radius: 18px; }
+  .digits.placeholder { letter-spacing: 4px; }
+  .digits.long { font-size: 28px; letter-spacing: 3px; }
+  .screen-search .pad .keypad { flex: none; gap: 8px; grid-template-rows: repeat(4, 58px); grid-template-rows: repeat(4, clamp(56px, 8.5dvh, 80px)); max-height: none; }
+  .keypad button { border-radius: 18px; font-size: 30px; }
+  .keypad button.fn { font-size: 18px; }
+  .keypad button svg.icon { width: 28px; height: 28px; }
+  .screen-search .side-actions { margin-top: 10px; padding-top: 0; gap: 8px; }
+  .screen-search .side-actions .btn.big { min-height: 52px; font-size: 16px; padding: 6px 6px; border-radius: 18px; }
+
+  /* The how-to steps are for the big screen; on a phone the keypad says enough. */
+  .welcome { background: transparent; box-shadow: none; padding: 0; gap: 14px; border-radius: 0; }
+  .welcome-mark, .welcome-title, .welcome > .results > .steps { display: none; }
+  .welcome .result { background: #fff; box-shadow: var(--raise); }
+  .welcome > .results:empty, .welcome > .results:has(> .steps) { display: none; }
+  .newcomer { grid-template-columns: auto 1fr; gap: 14px; min-height: 84px; padding: 14px 16px; border-radius: 22px; }
+  .newcomer-icon { width: 48px; height: 48px; }
+  .newcomer-icon svg.icon { width: 26px; height: 26px; }
+  .newcomer-title { font-size: 22px; }
+  .newcomer-sub { font-size: 15px; margin-top: 3px; }
+
+  .results > .prompt { font-size: 19px; margin: 0; }
+  .result { padding: 12px 16px; border-radius: 18px; }
+  .result .fam { font-size: 21px; }
+  .result .who, .result .kids { font-size: 16px; }
+  .result .phone { font-size: 17px; }
+  .empty-state { padding: 18px 6px; font-size: 17px; }
+  .empty-state strong { font-size: 21px; }
+  .namebox input { font-size: 20px; padding: 12px 14px; }
+
+  /* Household: Back and the family name on one line, one person per row */
+  .btn.big { min-height: 56px; font-size: 19px; padding: 10px 16px; border-radius: 18px; }
+  .btn.huge { min-height: 64px; font-size: 21px; border-radius: 20px; }
+  .hh-head { gap: 10px 12px; margin-bottom: 14px; flex-wrap: wrap; }
+  .hh-head > .grow { display: none; }
+  .hh-head > div { flex: 1 1 0; min-width: 0; }
+  .hh-head > .btn:first-child { min-height: 48px; padding: 8px 14px 8px 10px; }
+  .hh-head h1 { font-size: 24px; line-height: 1.15; overflow-wrap: anywhere; }
+  .hh-head .who { font-size: 15px; }
+  .hh-head > .btn:last-child:not(:first-child) { flex: 1 1 100%; }
+  .kids-grid { grid-template-columns: 1fr; gap: 10px; padding-bottom: 110px; }
+  .kid { min-height: 0; padding: 14px 14px 12px 60px; border-radius: 20px; }
+  .kid .tick { left: 14px; top: 15px; width: 34px; height: 34px; }
+  .kid .tick svg.icon { width: 22px; height: 22px; }
+  .kid .nm { font-size: 23px; }
+  .kid .ln { font-size: 16px; margin-bottom: 6px; }
+  .kid .meta .pill { font-size: 15px; padding: 3px 10px; }
+  .kid.done { padding-left: 14px; }
+  .action-bar { padding: 10px 16px; padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)); }
+
+  .success-title { font-size: 30px; }
+  .success-names { font-size: 19px; }
+  .big-tick { width: 84px; height: 84px; }
+  .big-tick svg.icon { width: 48px; height: 48px; }
+  .print-box { font-size: 19px; padding: 14px 16px; }
+
+  .form h1, .lock h1 { font-size: 26px; }
+  .about { padding: 0 14px; }
+  .about summary { font-size: 18px; flex-wrap: wrap; row-gap: 0; padding: 8px 28px 8px 0; position: relative; }
+  .about summary .hint { flex-basis: 100%; font-size: 15px; font-weight: 550; }
+  .about summary::after { position: absolute; right: 0; top: 50%; transform: translateY(-50%); }
+  .choice { font-size: 16px; padding: 8px 14px; }
+  .dialog { padding: 18px; }
+  .dialog h2 { font-size: 23px; }
+  .overlay { padding: 12px; }
+  /* iOS zooms into any box with text under 16px */
+  input, select, textarea { font-size: max(16px, 1em); }
+}
+/* A small iPhone in Safari with its toolbars showing: drop the heading so the newcomer button still shows */
+@media (max-width: 560px) and (max-height: 600px) {
+  .screen-search { padding-top: 10px; }
+  .screen-search .pad-title { display: none; }
+  .screen-search .pad .prompt { margin-bottom: 8px; }
+  .screen-search .digits { height: 52px; font-size: 32px; margin-bottom: 8px; }
+  .screen-search .pad .keypad { gap: 6px; grid-template-rows: repeat(4, 50px); }
+  .screen-search .side-actions .btn.big { min-height: 48px; }
+  .newcomer { min-height: 72px; padding: 10px 14px; }
+}
+
+/* Messages sit under the top bar, so they never cover the keypad or the Check in & print button */
+.toast-wrap { top: calc(76px + env(safe-area-inset-top, 0px)); bottom: auto; }

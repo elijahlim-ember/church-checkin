@@ -1,0 +1,7 @@
+# Allowlist for known false positives only. Dummy fixtures, not live credentials.
+[allowlist]
+description = "Dummy test API key and kiosk pickup-code alphabet"
+regexes = [
+  '''0123456789abcdef0123456789abcdef''',
+  '''ACDEFGHJKMNPQRTWXY34679''',
+]

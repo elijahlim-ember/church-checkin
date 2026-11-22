@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <!-- Zoom stays off on purpose: this is a shared kiosk, and a child's pinch would leave the next family a zoomed-in
+       screen. The text is already large. The staff screens (admin.html) can be zoomed. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Church Check-in">
+  <meta name="theme-color" content="#f5f5f7">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="icon" href="/icon.png">
+  <title>Church Check-in</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/kiosk.css">
+</head>
+<body>
+  <div id="app">
+    <header class="bar" id="bar"><span class="brand"><img class="brand-mark" src="/brand-mark.png" alt="">Church Check-in</span></header>
+    <main id="main"><div class="screen"><div class="empty-state" id="starting"><span class="spinner"></span> Starting…</div></div></main>
+  </div>
+  <script src="/common.js"></script>
+  <script src="/kiosk-strings.js"></script>
+  <script src="/kiosk.js"></script>
+</body>
+</html>
